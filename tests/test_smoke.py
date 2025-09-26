@@ -1,6 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
+from datetime import datetime, timedelta, timezone
 
 @pytest.fixture
 def client():
@@ -113,3 +114,11 @@ def test_stats_endpoint(client):
     data = r2.json()
     assert data["click_count"] >= 2
     assert data["last_accessed"] is not None
+
+def test_redirect_expired_returns_410(client):
+    expired_iso = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
+    r = client.post("/api/links", json={"original_url": "https://expired.com", "expires_at": expired_iso})
+    code = r.json()["short_code"]
+
+    r2 = client.get(f"/r/{code}", allow_redirects=False)
+    assert r2.status_code == 410
