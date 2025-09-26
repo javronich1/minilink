@@ -75,3 +75,12 @@ def update_link(code: str, payload: LinkUpdate, session: Session = Depends(get_s
     session.commit()
     session.refresh(link)
     return link
+
+@app.delete("/api/links/{code}", status_code=204)
+def delete_link(code: str, session: Session = Depends(get_session)):
+    link = session.exec(select(Link).where(Link.short_code == code)).first()
+    if not link:
+        raise HTTPException(status_code=404, detail="Not found")
+    session.delete(link)
+    session.commit()
+    # 204 No Content → return nothing

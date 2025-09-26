@@ -64,3 +64,20 @@ def test_update_link_custom_code_conflict(client):
 def test_update_link_not_found(client):
     r = client.patch("/api/links/__nope__", json={"original_url": "https://x.com"})
     assert r.status_code == 404
+
+def test_delete_link(client):
+    # create
+    r = client.post("/api/links", json={"original_url": "https://to-delete.com"})
+    code = r.json()["short_code"]
+
+    # delete
+    r2 = client.delete(f"/api/links/{code}")
+    assert r2.status_code == 204
+
+    # verify it's gone
+    r3 = client.get(f"/api/links/{code}")
+    assert r3.status_code == 404
+
+def test_delete_link_not_found(client):
+    r = client.delete("/api/links/__nope__")
+    assert r.status_code == 404
