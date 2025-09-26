@@ -19,3 +19,13 @@ def test_create_link_minimal(client):
     body = r.json()
     assert "short_code" in body
     assert body["original_url"].rstrip("/") == "https://example.com"
+
+def test_list_links(client):
+    # ensure at least one exists
+    client.post("/api/links", json={"original_url": "https://example.com"})
+    r = client.get("/api/links")
+    assert r.status_code == 200
+    data = r.json()
+    assert isinstance(data, list)
+    assert len(data) >= 1
+    assert "short_code" in data[0]

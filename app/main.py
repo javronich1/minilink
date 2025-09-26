@@ -23,7 +23,6 @@ def create_link(payload: LinkCreate, session: Session = Depends(get_session)):
 
     code = choose_code(payload.custom_code)
 
-    # ensure the short code is unique
     exists = session.exec(select(Link).where(Link.short_code == code)).first()
     if exists:
         raise HTTPException(status_code=409, detail="Custom code already in use")
@@ -37,3 +36,7 @@ def create_link(payload: LinkCreate, session: Session = Depends(get_session)):
     session.commit()
     session.refresh(link)
     return link
+
+@app.get("/api/links", response_model=list[LinkRead])
+def list_links(session: Session = Depends(get_session)):
+    return session.exec(select(Link)).all()
