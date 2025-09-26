@@ -99,3 +99,17 @@ def test_redirect_and_analytics(client):
     body = r3.json()
     assert body["click_count"] >= 1
     assert body["last_accessed"] is not None
+
+def test_stats_endpoint(client):
+    r = client.post("/api/links", json={"original_url": "https://stats.com"})
+    code = r.json()["short_code"]
+
+    # trigger a couple redirects
+    client.get(f"/r/{code}", allow_redirects=False)
+    client.get(f"/r/{code}", allow_redirects=False)
+
+    r2 = client.get(f"/api/links/{code}/stats")
+    assert r2.status_code == 200
+    data = r2.json()
+    assert data["click_count"] >= 2
+    assert data["last_accessed"] is not None

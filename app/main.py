@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from app.db import init_db, get_session
 from sqlmodel import Session, select
 from app.models import Link
-from app.schemas import LinkCreate, LinkRead, LinkUpdate
+from app.schemas import LinkCreate, LinkRead, LinkUpdate, StatsRead
 from app.services import choose_code, sanitize_scheme
 from datetime import datetime
 from starlette.responses import RedirectResponse
@@ -105,3 +105,10 @@ def redirect(code: str, session: Session = Depends(get_session)):
 
     # 307 preserves method (POST/GET), good for redirects
     return RedirectResponse(url=link.original_url, status_code=307)
+
+@app.get("/api/links/{code}/stats", response_model=StatsRead)
+def link_stats(code: str, session: Session = Depends(get_session)):
+    link = session.exec(select(Link).where(Link.short_code == code)).first()
+    if not link:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"click_count": link.click_count, "last_accessed": link.last_accessed}
