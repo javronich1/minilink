@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>minilink — analytics</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 920px; margin: 2rem auto; padding: 0 1rem; }
+      table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+      th, td { border: 1px solid #ddd; padding: .5rem; text-align: left; }
+      th { background: #f7f7f7; }
+      code { background: #f5f5f5; padding: .2rem .4rem; border-radius: 4px; }
+      .top { display:flex; justify-content: space-between; align-items:center; }
+    </style>
+  </head>
+  <body>
+    <div class="top">
+      <h1>All Short Links</h1>
+      <p><a href="/">Create new</a></p>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Short</th>
+          <th>Original URL</th>
+          <th>Clicks</th>
+          <th>Last accessed</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for link in links %}
+        <tr>
+          <td><a href="/r/{{ link.short_code }}">/r/{{ link.short_code }}</a></td>
+          <td><code>{{ link.original_url }}</code></td>
+          <td>{{ link.click_count }}</td>
+          <td>{{ link.last_accessed or "Never" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <p><a href="/docs">OpenAPI docs</a></p>
+  </body>
+</html>
+
+<p class="msg"><a href="/links">See analytics</a></p>

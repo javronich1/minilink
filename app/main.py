@@ -154,3 +154,11 @@ def create_form(
         {"request": request, "short_code": code},
         status_code=201,
     )
+
+@app.get("/links", response_class=HTMLResponse)
+def list_links_ui(request: Request, session: Session = Depends(get_session)):
+    links = session.exec(select(Link)).all()
+    return templates.TemplateResponse(
+        "list.html",
+        {"request": request, "links": links},
+    )
