@@ -29,3 +29,15 @@ def test_list_links(client):
     assert isinstance(data, list)
     assert len(data) >= 1
     assert "short_code" in data[0]
+
+def test_read_link_by_code(client):
+    r = client.post("/api/links", json={"original_url": "https://example.com"})
+    code = r.json()["short_code"]
+
+    r2 = client.get(f"/api/links/{code}")
+    assert r2.status_code == 200
+    assert r2.json()["short_code"] == code
+
+def test_read_link_not_found(client):
+    r = client.get("/api/links/__nope__")
+    assert r.status_code == 404

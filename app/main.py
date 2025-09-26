@@ -40,3 +40,10 @@ def create_link(payload: LinkCreate, session: Session = Depends(get_session)):
 @app.get("/api/links", response_model=list[LinkRead])
 def list_links(session: Session = Depends(get_session)):
     return session.exec(select(Link)).all()
+
+@app.get("/api/links/{code}", response_model=LinkRead)
+def read_link(code: str, session: Session = Depends(get_session)):
+    link = session.exec(select(Link).where(Link.short_code == code)).first()
+    if not link:
+        raise HTTPException(status_code=404, detail="Not found")
+    return link
