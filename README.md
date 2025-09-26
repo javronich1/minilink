@@ -23,3 +23,7 @@ API Overview
 	•	GET /r/{code} → redirect (increments analytics)
 	•	GET /api/links/{code}/stats → stats
 	•	GET /health → health check
+
+## Minimal UI
+- `/` — HTML form to create a short link
+- `/links` — Analytics table (sorted by most-clicked, shows last access)

@@ -1,0 +1,34 @@
+<!doctype html>
+<html data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <title>minilink — {% block title %}{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Tailwind via CDN (good enough for this project) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="min-h-screen bg-gray-50 text-gray-900">
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-gray-200">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="h-16 flex items-center justify-between">
+          <a href="/" class="text-xl font-bold tracking-tight">minilink</a>
+          <div class="flex gap-2">
+            <a href="/" class="px-3 py-1.5 rounded-md text-sm font-medium hover:bg-gray-100 {% block nav_home %}{% endblock %}">Home</a>
+            <a href="/links" class="px-3 py-1.5 rounded-md text-sm font-medium hover:bg-gray-100 {% block nav_analytics %}{% endblock %}">Analytics</a>
+            <a href="/docs" class="px-3 py-1.5 rounded-md text-sm font-medium hover:bg-gray-100">API Docs</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Page container -->
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-xs text-gray-500">
+      <p>Built with FastAPI + SQLite • © {{ 2025 }}</p>
+    </footer>
+  </body>
+</html>
