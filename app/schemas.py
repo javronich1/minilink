@@ -1,0 +1,25 @@
+from datetime import datetime
+from typing import Optional
+from pydantic import BaseModel, AnyUrl
+
+class LinkCreate(BaseModel):
+    original_url: AnyUrl
+    custom_code: Optional[str] = None
+    expires_at: Optional[datetime] = None
+
+class LinkRead(BaseModel):
+    short_code: str
+    original_url: str
+    created_at: datetime
+    expires_at: Optional[datetime] = None
+    click_count: int
+    last_accessed: Optional[datetime] = None
+
+class LinkUpdate(BaseModel):
+    original_url: Optional[AnyUrl] = None
+    custom_code: Optional[str] = None
+    expires_at: Optional[datetime] = None
+
+class StatsRead(BaseModel):
+    click_count: int
+    last_accessed: Optional[datetime]
