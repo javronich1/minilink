@@ -21,6 +21,7 @@
           <th class="px-4 py-2">Original URL</th>
           <th class="px-4 py-2">Clicks</th>
           <th class="px-4 py-2">Last accessed</th>
+          <th class="px-4 py-2">Actions</th>
         </tr>
       </thead>
       <tbody id="linksBody">
@@ -32,6 +33,12 @@
           <td class="px-4 py-2"><code class="bg-gray-100 px-1.5 py-0.5 rounded">{{ link.original_url }}</code></td>
           <td class="px-4 py-2 font-medium">{{ link.click_count }}</td>
           <td class="px-4 py-2 text-gray-600">{{ link.last_accessed or "Never" }}</td>
+          <td class="px-4 py-2">
+            <button class="copy-btn rounded-lg px-2 py-1 border border-gray-300 hover:bg-gray-50"
+                    data-url="{{ request.url.scheme }}://{{ request.url.hostname }}{% if request.url.port %}:{{ request.url.port }}{% endif %}/r/{{ link.short_code }}">
+              Copy
+            </button>
+          </td>
         </tr>
         {% endfor %}
       </tbody>
@@ -40,13 +47,15 @@
 
   <p class="mt-3 text-sm text-gray-500">Tip: use the Refresh button after testing redirects to see updated clicks.</p>
 
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-black text-white text-sm px-3 py-2 rounded-lg opacity-0 transition-opacity"></div>
+
   <script>
     const tbody = document.getElementById('linksBody');
     const refreshBtn = document.getElementById('refreshBtn');
 
     function fmtDate(iso) {
       if (!iso) return "Never";
-      // Show local time in a friendly format
       try {
         const d = new Date(iso);
         return d.toLocaleString();
@@ -56,17 +65,48 @@
     }
 
     function rowHtml(link) {
+      const origin = window.location.origin;
+      const full = `${origin}/r/${link.short_code}`;
       return `
         <tr class="border-t border-gray-100 hover:bg-gray-50">
           <td class="px-4 py-2">
             <a class="text-blue-700 underline" href="/r/${link.short_code}">/r/${link.short_code}</a>
           </td>
           <td class="px-4 py-2"><code class="bg-gray-100 px-1.5 py-0.5 rounded">${link.original_url}</code></td>
-          <td class="px-4 py-2 font-medium">${link.click_count}</td>
+          <td class="px-4 py-2 font-medium">${link.click_count ?? 0}</td>
           <td class="px-4 py-2 text-gray-600">${fmtDate(link.last_accessed)}</td>
+          <td class="px-4 py-2">
+            <button class="copy-btn rounded-lg px-2 py-1 border border-gray-300 hover:bg-gray-50" data-url="${full}">
+              Copy
+            </button>
+          </td>
         </tr>
       `;
     }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.opacity = 1;
+      setTimeout(() => { t.style.opacity = 0; }, 900);
+    }
+
+    async function copyToClipboard(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast('Copied!');
+      } catch {
+        showToast('Copy failed');
+      }
+    }
+
+    // Delegate clicks for copy buttons (works after refresh repaint)
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.copy-btn');
+      if (!btn) return;
+      const url = btn.getAttribute('data-url');
+      copyToClipboard(url);
+    });
 
     async function refresh() {
       try {
