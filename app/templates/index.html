@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>minilink</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+      input[type="text"] { width: 70%; padding: .5rem; }
+      button { padding: .5rem .75rem; cursor: pointer; }
+      .msg { margin-top: 1rem; }
+      code { background: #f5f5f5; padding: .2rem .4rem; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <h1>minilink</h1>
+    <form method="post" action="/create">
+      <input type="text" name="original_url" placeholder="https://example.com" required />
+      <button type="submit">Shorten</button>
+    </form>
+
+    {% if error %}
+      <p class="msg" style="color:red">{{ error }}</p>
+    {% endif %}
+
+    {% if short_code %}
+      <div class="msg">
+        <p>Short link created:</p>
+        <p>
+          <a href="/r/{{ short_code }}">/r/{{ short_code }}</a>
+          <small>(opens redirect)</small>
+        </p>
+        <p>API detail: <code>/api/links/{{ short_code }}</code></p>
+      </div>
+    {% endif %}
+
+    <p class="msg"><a href="/docs">OpenAPI docs</a></p>
+  </body>
+</html>

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Request, Form
 from app.db import init_db, get_session
 from sqlmodel import Session, select
 from app.models import Link
@@ -6,8 +6,16 @@ from app.schemas import LinkCreate, LinkRead, LinkUpdate, StatsRead
 from app.services import choose_code, sanitize_scheme
 from datetime import datetime
 from starlette.responses import RedirectResponse
+from fastapi.responses import HTMLResponse
 
 app = FastAPI(title="minilink")
+
+import os
+from fastapi.templating import Jinja2Templates
+
+templates = Jinja2Templates(
+    directory=os.path.join(os.path.dirname(__file__), "templates")
+)
 
 @app.on_event("startup")
 def on_startup():
@@ -112,3 +120,37 @@ def link_stats(code: str, session: Session = Depends(get_session)):
     if not link:
         raise HTTPException(status_code=404, detail="Not found")
     return {"click_count": link.click_count, "last_accessed": link.last_accessed}
+
+@app.get("/", response_class=HTMLResponse)
+def index(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.post("/create", response_class=HTMLResponse)
+def create_form(
+    request: Request,
+    original_url: str = Form(...),
+    session: Session = Depends(get_session),
+):
+    # Reuse the same validation logic
+    if not sanitize_scheme(original_url):
+        return templates.TemplateResponse(
+            "index.html",
+            {"request": request, "error": "Only http/https URLs are allowed"},
+            status_code=422,
+        )
+    # Choose a random code (no custom alias in the form to keep it simple)
+    code = choose_code(None)
+    # Ensure unique; regenerate if collision (rare, but safe)
+    while session.exec(select(Link).where(Link.short_code == code)).first():
+        code = choose_code(None)
+
+    link = Link(short_code=code, original_url=original_url)
+    session.add(link)
+    session.commit()
+    session.refresh(link)
+
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request, "short_code": code},
+        status_code=201,
+    )
