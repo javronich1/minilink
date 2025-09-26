@@ -4,6 +4,8 @@ from sqlmodel import Session, select
 from app.models import Link
 from app.schemas import LinkCreate, LinkRead, LinkUpdate
 from app.services import choose_code, sanitize_scheme
+from datetime import datetime
+from starlette.responses import RedirectResponse
 
 app = FastAPI(title="minilink")
 
@@ -84,3 +86,22 @@ def delete_link(code: str, session: Session = Depends(get_session)):
     session.delete(link)
     session.commit()
     # 204 No Content → return nothing
+
+@app.get("/r/{code}")
+def redirect(code: str, session: Session = Depends(get_session)):
+    link = session.exec(select(Link).where(Link.short_code == code)).first()
+    if not link:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    # handle expiry if set
+    if link.expires_at and link.expires_at <= datetime.utcnow():
+        raise HTTPException(status_code=410, detail="Link expired")
+
+    # analytics
+    link.click_count += 1
+    link.last_accessed = datetime.utcnow()
+    session.add(link)
+    session.commit()
+
+    # 307 preserves method (POST/GET), good for redirects
+    return RedirectResponse(url=link.original_url, status_code=307)

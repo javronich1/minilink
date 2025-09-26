@@ -81,3 +81,21 @@ def test_delete_link(client):
 def test_delete_link_not_found(client):
     r = client.delete("/api/links/__nope__")
     assert r.status_code == 404
+
+def test_redirect_and_analytics(client):
+    # create a link
+    r = client.post("/api/links", json={"original_url": "https://example.org"})
+    assert r.status_code == 201
+    code = r.json()["short_code"]
+
+    # hit redirect (don't follow it)
+    r2 = client.get(f"/r/{code}", allow_redirects=False)
+    assert r2.status_code == 307
+    assert r2.headers["location"].rstrip("/") == "https://example.org"
+
+    # verify analytics updated via read endpoint
+    r3 = client.get(f"/api/links/{code}")
+    assert r3.status_code == 200
+    body = r3.json()
+    assert body["click_count"] >= 1
+    assert body["last_accessed"] is not None
