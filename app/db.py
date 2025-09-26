@@ -4,7 +4,8 @@ DATABASE_URL = "sqlite:///./minilink.sqlite3"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
 def init_db() -> None:
-    from app import models 
+    # Ensure models are imported so tables are registered
+    from app import models  # noqa: F401
     SQLModel.metadata.create_all(engine)
 
 def get_session():

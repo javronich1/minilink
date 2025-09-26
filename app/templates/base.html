@@ -4,11 +4,10 @@
     <meta charset="utf-8" />
     <title>minilink — {% block title %}{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Tailwind via CDN (good enough for this project) -->
+    <!-- Tailwind via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="min-h-screen bg-gray-50 text-gray-900">
-    <!-- Navbar -->
     <nav class="bg-white border-b border-gray-200">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="h-16 flex items-center justify-between">
@@ -22,13 +21,12 @@
       </div>
     </nav>
 
-    <!-- Page container -->
     <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {% block content %}{% endblock %}
     </main>
 
     <footer class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-xs text-gray-500">
-      <p>Built with FastAPI + SQLite • © {{ 2025 }}</p>
+      <p>Built with FastAPI + SQLite • © 2025</p>
     </footer>
   </body>
 </html>

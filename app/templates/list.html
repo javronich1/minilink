@@ -18,6 +18,7 @@
       <thead class="bg-gray-50 text-left">
         <tr>
           <th class="px-4 py-2">Short</th>
+          <th class="px-4 py-2">Label</th>
           <th class="px-4 py-2">Original URL</th>
           <th class="px-4 py-2">Clicks</th>
           <th class="px-4 py-2">Last accessed</th>
@@ -30,6 +31,7 @@
           <td class="px-4 py-2">
             <a class="text-blue-700 underline" href="/r/{{ link.short_code }}">/r/{{ link.short_code }}</a>
           </td>
+          <td class="px-4 py-2">{{ link.label or "—" }}</td>
           <td class="px-4 py-2"><code class="bg-gray-100 px-1.5 py-0.5 rounded">{{ link.original_url }}</code></td>
           <td class="px-4 py-2 font-medium">{{ link.click_count }}</td>
           <td class="px-4 py-2 text-gray-600">{{ link.last_accessed or "Never" }}</td>
@@ -56,12 +58,7 @@
 
     function fmtDate(iso) {
       if (!iso) return "Never";
-      try {
-        const d = new Date(iso);
-        return d.toLocaleString();
-      } catch {
-        return iso;
-      }
+      try { return new Date(iso).toLocaleString(); } catch { return iso; }
     }
 
     function rowHtml(link) {
@@ -72,6 +69,7 @@
           <td class="px-4 py-2">
             <a class="text-blue-700 underline" href="/r/${link.short_code}">/r/${link.short_code}</a>
           </td>
+          <td class="px-4 py-2">${link.label ?? "—"}</td>
           <td class="px-4 py-2"><code class="bg-gray-100 px-1.5 py-0.5 rounded">${link.original_url}</code></td>
           <td class="px-4 py-2 font-medium">${link.click_count ?? 0}</td>
           <td class="px-4 py-2 text-gray-600">${fmtDate(link.last_accessed)}</td>
@@ -100,7 +98,6 @@
       }
     }
 
-    // Delegate clicks for copy buttons (works after refresh repaint)
     document.addEventListener('click', (e) => {
       const btn = e.target.closest('.copy-btn');
       if (!btn) return;
@@ -115,7 +112,7 @@
         if (!res.ok) throw new Error('Failed to fetch links');
         const data = await res.json();
 
-        // Sort client-side: clicks desc, then last_accessed desc
+        // Sort: clicks desc, then last_accessed desc
         data.sort((a, b) => {
           if ((b.click_count || 0) !== (a.click_count || 0)) {
             return (b.click_count || 0) - (a.click_count || 0);
