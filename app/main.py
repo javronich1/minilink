@@ -157,8 +157,8 @@ def create_form(
 
 @app.get("/links", response_class=HTMLResponse)
 def list_links_ui(request: Request, session: Session = Depends(get_session)):
-    links = session.exec(select(Link)).all()
-    return templates.TemplateResponse(
-        "list.html",
-        {"request": request, "links": links},
-    )
+    links = session.exec(
+        select(Link).order_by(Link.click_count.desc(), Link.last_accessed.desc())
+    ).all()
+    return templates.TemplateResponse("list.html", {"request": request, "links": links})
+
