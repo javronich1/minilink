@@ -40,10 +40,16 @@
             <td class="px-4 py-2"><code class="bg-gray-100 px-1.5 py-0.5 rounded">{{ link.original_url }}</code></td>
             <td class="px-4 py-2 font-medium">{{ link.click_count }}</td>
             <td class="px-4 py-2 text-gray-600">{{ link.last_accessed or "Never" }}</td>
-            <td class="px-4 py-2">
-              <button class="copy-btn rounded-lg px-2 py-1 border border-gray-300 hover:bg-gray-50"
-                      data-url="{{ request.url.scheme }}://{{ request.url.hostname }}{% if request.url.port %}:{{ request.url.port }}{% endif %}/r/{{ link.short_code }}">
+            <td class="px-4 py-2 flex gap-2">
+              <button
+                class="copy-btn rounded-lg px-2 py-1 border border-gray-300 hover:bg-gray-50"
+                data-url="{{ request.url.scheme }}://{{ request.url.hostname }}{% if request.url.port %}:{{ request.url.port }}{% endif %}/r/{{ link.short_code }}">
                 Copy
+              </button>
+              <button
+                class="delete-btn rounded-lg px-2 py-1 border border-red-300 text-red-700 hover:bg-red-50"
+                data-code="{{ link.short_code }}">
+                Delete
               </button>
             </td>
           </tr>
@@ -55,6 +61,7 @@
     <p class="mt-3 text-sm text-gray-500">Tip: use the Refresh button after testing redirects to see updated clicks.</p>
   {% endif %}
 
+  <!-- Toast -->
   <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-black text-white text-sm px-3 py-2 rounded-lg opacity-0 transition-opacity"></div>
 
   <script>
@@ -71,14 +78,19 @@
       const full = `${origin}/r/${link.short_code}`;
       return `
         <tr class="border-t border-gray-100 hover:bg-gray-50">
-          <td class="px-4 py-2"><a class="text-blue-700 underline" href="/r/${link.short_code}">/r/${link.short_code}</a></td>
+          <td class="px-4 py-2">
+            <a class="text-blue-700 underline" href="/r/${link.short_code}">/r/${link.short_code}</a>
+          </td>
           <td class="px-4 py-2">${link.label ?? "—"}</td>
           <td class="px-4 py-2"><code class="bg-gray-100 px-1.5 py-0.5 rounded">${link.original_url}</code></td>
           <td class="px-4 py-2 font-medium">${link.click_count ?? 0}</td>
           <td class="px-4 py-2 text-gray-600">${fmtDate(link.last_accessed)}</td>
-          <td class="px-4 py-2">
+          <td class="px-4 py-2 flex gap-2">
             <button class="copy-btn rounded-lg px-2 py-1 border border-gray-300 hover:bg-gray-50" data-url="${full}">
               Copy
+            </button>
+            <button class="delete-btn rounded-lg px-2 py-1 border border-red-300 text-red-700 hover:bg-red-50" data-code="${link.short_code}">
+              Delete
             </button>
           </td>
         </tr>
@@ -89,7 +101,7 @@
       const t = document.getElementById('toast');
       t.textContent = msg;
       t.style.opacity = 1;
-      setTimeout(() => { t.style.opacity = 0; }, 900);
+      setTimeout(() => { t.style.opacity = 0; }, 1000);
     }
 
     async function copyToClipboard(text) {
@@ -101,19 +113,56 @@
       }
     }
 
+    // COPY handler (event delegation)
     document.addEventListener('click', (e) => {
       const btn = e.target.closest('.copy-btn');
       if (!btn) return;
       const url = btn.getAttribute('data-url');
-      copyToClipboard(url);
+      if (url) copyToClipboard(url);
     });
 
+    // DELETE handler (event delegation)
+    document.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.delete-btn');
+      if (!btn) return;
+
+      const code = btn.getAttribute('data-code');
+      if (!code) return;
+
+      if (!confirm(`Delete /r/${code}? This cannot be undone.`)) return;
+
+      try {
+        btn.disabled = true;
+        const res = await fetch(`/api/links/${code}`, { method: 'DELETE' });
+        if (!res.ok && res.status !== 204) {
+          throw new Error('Failed to delete link');
+        }
+        showToast('Deleted');
+        await refresh();
+      } catch (err) {
+        alert(err?.message || 'Delete failed');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // Refresh list from API (owned links only)
     async function refresh() {
       try {
         refreshBtn.disabled = true;
         const res = await fetch('/api/links');
         if (!res.ok) throw new Error('Failed to fetch links');
         const data = await res.json();
+
+        // Optional: sort by clicks desc then last_accessed desc
+        data.sort((a, b) => {
+          const c = (b.click_count || 0) - (a.click_count || 0);
+          if (c !== 0) return c;
+          const ta = a.last_accessed ? Date.parse(a.last_accessed) : 0;
+          const tb = b.last_accessed ? Date.parse(b.last_accessed) : 0;
+          return tb - ta;
+        });
+
         tbody.innerHTML = data.map(rowHtml).join('');
       } catch (e) {
         alert(e.message || 'Refresh error');
@@ -122,6 +171,7 @@
       }
     }
 
+    // Wire refresh button
     refreshBtn.addEventListener('click', refresh);
   </script>
 {% endblock %}

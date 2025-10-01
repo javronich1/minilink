@@ -14,7 +14,7 @@ Includes user authentication and individual analytics for each account.
   - Click count (`click_count`)
   - Last access time (`last_accessed`)
 - 🧠 Smart sorting on the analytics page (most-clicked first)
-- ⚙️ Full REST API with CRUD operations
+- ⚙️ Full REST API with CRUD operations (create links, read links, update click_counts, delete links)
 - ❤️ Minimal, elegant UI built with Tailwind CSS
 - 🩺 Health check endpoint for monitoring
 
