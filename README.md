@@ -100,7 +100,20 @@ Password: 123
 	•	Passlib (PBKDF2-SHA256) — secure password hashing
 	•	SessionMiddleware — cookie-based authentication
 
-## ❤️ Credits
+⚠️ Disclaimer — Use of AI Assistance
+
+This project was developed with the assistance of AI tools (ChatGPT by OpenAI) to streamline the development process.
+
+AI was primarily used for:
+	•	Generating boilerplate code and repetitive functions
+	•	Designing HTML/CSS templates and improving UI styling
+	•	Providing guidance on best practices and debugging support
+
+All critical logic, reasoning, data modeling, and architectural decisions — including database design, authentication flow, and feature implementation — were conceptualized, coded, and refined by a human developer.
+
+The AI served as a productivity enhancer, not a replacement for human creativity or understanding.
+
+💡 This project demonstrates the powerful synergy between human intelligence and AI assistance in modern software development.
 
 Created by Gonzalo Fernandez de Cordoba
 Built as a learning and portfolio project — minimal yet powerful.
