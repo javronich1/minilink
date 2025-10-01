@@ -108,6 +108,9 @@ AI was primarily used for:
 	•	Generating boilerplate code and repetitive functions
 	•	Designing HTML/CSS templates and improving UI styling
 	•	Providing guidance on best practices and debugging support
+    •	Repetitive tasks such as this README file
+    •	Guidance for some better practices
+
 
 All critical logic, reasoning, data modeling, and architectural decisions — including database design, authentication flow, and feature implementation — were conceptualized, coded, and refined by a human developer.
 
