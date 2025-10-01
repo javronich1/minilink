@@ -32,14 +32,14 @@ async def lifespan(app: FastAPI):
 # -------------------------------
 app = FastAPI(title="minilink", lifespan=lifespan)
 
-# Secure cookie-based session
+# Secure session
 app.add_middleware(SessionMiddleware, secret_key="change-me-please-very-secret")
 
-# Jinja templates
+# Jinja
 templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
 
 # -------------------------------
-# Helpers
+# Helper functions
 # -------------------------------
 def get_current_user(request: Request, session: Session) -> Optional[User]:
     uid = request.session.get("user_id")
@@ -48,7 +48,7 @@ def get_current_user(request: Request, session: Session) -> Optional[User]:
     return session.get(User, uid)
 
 # -------------------------------
-# Health check
+# Health check function
 # -------------------------------
 @app.get("/health")
 def health():
@@ -113,7 +113,7 @@ def read_link(code: str, request: Request, session: Session = Depends(get_sessio
     return link
 
 # -------------------------------
-# API: UPDATE LINK (secured)
+# API: UPDATE LINK
 # -------------------------------
 @app.patch("/api/links/{code}", response_model=LinkRead)
 def update_link(
@@ -155,7 +155,7 @@ def update_link(
     return link
 
 # -------------------------------
-# API: DELETE LINK (secured)
+# API: DELETE LINK
 # -------------------------------
 @app.delete("/api/links/{code}", status_code=204)
 def delete_link(

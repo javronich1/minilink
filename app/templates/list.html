@@ -3,6 +3,15 @@
 {% block nav_analytics %}bg-gray-100{% endblock %}
 
 {% block content %}
+  <!--
+    Analytics page (per-user)
+    - Shows the logged-in user’s links only
+    - Table with short link, label, original URL, click count, last access
+    - Actions: Copy short URL, Delete link
+    - Refresh pulls fresh data from /api/links
+  -->
+
+  <!-- Header + actions -->
   <div class="flex items-center justify-between mb-4">
     <h1 class="text-2xl font-semibold">My Short Links</h1>
     <div class="flex gap-2">
@@ -14,10 +23,20 @@
   </div>
 
   {% if not user %}
-    <p class="text-gray-600">You must <a href="/login" class="text-blue-600 underline">log in</a> to view your analytics.</p>
+    <!-- Not logged in -->
+    <p class="text-gray-600">
+      You must <a href="/login" class="text-blue-600 underline">log in</a> to view your analytics.
+    </p>
   {% else %}
-    <p class="text-gray-600 mb-4">👋 Logged in as <strong>{{ user.username }}</strong> (<a href="/logout" class="text-blue-600 underline">Logout</a>)</p>
+    <!-- Logged-in banner + POST logout (consistent with server route) -->
+    <p class="text-gray-600 mb-4 flex items-center gap-2">
+      👋 Logged in as <strong>{{ user.username }}</strong>
+      <form method="post" action="/logout" class="inline">
+        <button type="submit" class="text-blue-600 underline hover:text-blue-700">Logout</button>
+      </form>
+    </p>
 
+    <!-- Table -->
     <div class="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-200">
       <table class="min-w-full text-sm" id="linksTable">
         <thead class="bg-gray-50 text-left">
@@ -37,15 +56,19 @@
               <a class="text-blue-700 underline" href="/r/{{ link.short_code }}">/r/{{ link.short_code }}</a>
             </td>
             <td class="px-4 py-2">{{ link.label or "—" }}</td>
-            <td class="px-4 py-2"><code class="bg-gray-100 px-1.5 py-0.5 rounded">{{ link.original_url }}</code></td>
+            <td class="px-4 py-2">
+              <code class="bg-gray-100 px-1.5 py-0.5 rounded">{{ link.original_url }}</code>
+            </td>
             <td class="px-4 py-2 font-medium">{{ link.click_count }}</td>
             <td class="px-4 py-2 text-gray-600">{{ link.last_accessed or "Never" }}</td>
             <td class="px-4 py-2 flex gap-2">
+              <!-- Copy button: copies full short URL to clipboard -->
               <button
                 class="copy-btn rounded-lg px-2 py-1 border border-gray-300 hover:bg-gray-50"
                 data-url="{{ request.url.scheme }}://{{ request.url.hostname }}{% if request.url.port %}:{{ request.url.port }}{% endif %}/r/{{ link.short_code }}">
                 Copy
               </button>
+              <!-- Delete button: confirms then calls DELETE /api/links/{code} -->
               <button
                 class="delete-btn rounded-lg px-2 py-1 border border-red-300 text-red-700 hover:bg-red-50"
                 data-code="{{ link.short_code }}">
@@ -58,13 +81,18 @@
       </table>
     </div>
 
-    <p class="mt-3 text-sm text-gray-500">Tip: use the Refresh button after testing redirects to see updated clicks.</p>
+    <p class="mt-3 text-sm text-gray-500">
+      Tip: use the Refresh button after testing redirects to see updated clicks.
+    </p>
   {% endif %}
 
   <!-- Toast -->
   <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-black text-white text-sm px-3 py-2 rounded-lg opacity-0 transition-opacity"></div>
 
   <script>
+    // -------------------------
+    // Helpers
+    // -------------------------
     const tbody = document.getElementById('linksBody');
     const refreshBtn = document.getElementById('refreshBtn');
 
@@ -73,6 +101,23 @@
       try { return new Date(iso).toLocaleString(); } catch { return iso; }
     }
 
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.opacity = 1;
+      setTimeout(() => { t.style.opacity = 0; }, 1000);
+    }
+
+    async function copyToClipboard(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast('Copied!');
+      } catch {
+        showToast('Copy failed');
+      }
+    }
+
+    // Build a table row from a link object (used for client-side refresh)
     function rowHtml(link) {
       const origin = window.location.origin;
       const full = `${origin}/r/${link.short_code}`;
@@ -97,23 +142,9 @@
       `;
     }
 
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.style.opacity = 1;
-      setTimeout(() => { t.style.opacity = 0; }, 1000);
-    }
-
-    async function copyToClipboard(text) {
-      try {
-        await navigator.clipboard.writeText(text);
-        showToast('Copied!');
-      } catch {
-        showToast('Copy failed');
-      }
-    }
-
-    // COPY handler (event delegation)
+    // -------------------------
+    // Event delegation: Copy
+    // -------------------------
     document.addEventListener('click', (e) => {
       const btn = e.target.closest('.copy-btn');
       if (!btn) return;
@@ -121,7 +152,9 @@
       if (url) copyToClipboard(url);
     });
 
-    // DELETE handler (event delegation)
+    // -------------------------
+    // Event delegation: Delete
+    // -------------------------
     document.addEventListener('click', async (e) => {
       const btn = e.target.closest('.delete-btn');
       if (!btn) return;
@@ -146,7 +179,9 @@
       }
     });
 
-    // Refresh list from API (owned links only)
+    // -------------------------
+    // Refresh table from API
+    // -------------------------
     async function refresh() {
       try {
         refreshBtn.disabled = true;
@@ -154,7 +189,7 @@
         if (!res.ok) throw new Error('Failed to fetch links');
         const data = await res.json();
 
-        // Optional: sort by clicks desc then last_accessed desc
+        // Sort: clicks desc, then last_accessed desc
         data.sort((a, b) => {
           const c = (b.click_count || 0) - (a.click_count || 0);
           if (c !== 0) return c;

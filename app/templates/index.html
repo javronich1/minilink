@@ -3,63 +3,116 @@
 {% block nav_home %}bg-gray-100{% endblock %}
 
 {% block content %}
+  <!--
+    Home page
+    - If user is logged in:
+        • Show "Create short link" form
+        • Show "Quick actions" card with link to analytics
+    - If not logged in:
+        • Show call-to-action to login / register
+  -->
   <div class="grid gap-6">
     {% if user %}
-      <p class="text-gray-600">👋 Welcome, <strong>{{ user.username }}</strong>!
-        <a href="/logout" class="text-blue-600 underline ml-2">Logout</a>
+      <!-- Logged-in banner with username and Logout action -->
+      <p class="text-gray-600 flex items-center gap-2">
+        👋 Welcome, <strong>{{ user.username }}</strong>!
+        <!-- Use POST for logout to match server route; avoid GET for state-changing actions -->
+        <form method="post" action="/logout" class="inline">
+          <button type="submit" class="text-blue-600 underline hover:text-blue-700">
+            Logout
+          </button>
+        </form>
       </p>
 
+      <!-- Create short link card -->
       <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h1 class="text-2xl font-semibold mb-4">Create a short link</h1>
-        <form method="post" action="/create" class="flex gap-2 flex-wrap">
-          <input name="original_url" type="url" placeholder="https://example.com"
-                 class="flex-1 min-w-[260px] rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                 required />
-          <input name="label" type="text" placeholder="Optional label"
-                 class="w-48 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          <button type="submit"
-                  class="rounded-lg px-4 py-2 bg-blue-600 text-white font-medium hover:bg-blue-700">
+
+        <!--
+          Form fields:
+          - original_url: required URL input
+          - label: optional tag shown in analytics table
+        -->
+        <form method="post" action="/create" class="flex gap-2 flex-wrap" aria-label="Create short link">
+          <input
+            name="original_url"
+            type="url"
+            placeholder="https://example.com"
+            class="flex-1 min-w-[260px] rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+          <input
+            name="label"
+            type="text"
+            placeholder="Optional label"
+            class="w-48 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            type="submit"
+            class="rounded-lg px-4 py-2 bg-blue-600 text-white font-medium hover:bg-blue-700"
+          >
             Shorten
           </button>
         </form>
 
+        <!-- Validation / server-side error message (e.g., invalid scheme) -->
         {% if error %}
           <p class="mt-3 text-red-600">{{ error }}</p>
         {% endif %}
 
+        <!-- Success panel after creating a short link -->
         {% if short_code %}
           <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <p class="font-medium">Short link created:</p>
             <p class="mt-1 flex items-center gap-2">
+              <!-- Short link shown; clicking will trigger redirect -->
               <a class="text-blue-700 underline" href="/r/{{ short_code }}">/r/{{ short_code }}</a>
-              <button type="button"
-                      class="rounded-lg px-2 py-1 border border-blue-300 hover:bg-blue-100"
-                      onclick="navigator.clipboard.writeText(window.location.origin + '/r/{{ short_code }}').then(()=>alert('Copied!'))">
+
+              <!-- Copy full URL to clipboard -->
+              <button
+                type="button"
+                class="rounded-lg px-2 py-1 border border-blue-300 hover:bg-blue-100"
+                title="Copy to clipboard"
+                onclick="navigator.clipboard.writeText(window.location.origin + '/r/{{ short_code }}').then(()=>alert('Copied!')).catch(()=>alert('Copy failed'))"
+              >
                 Copy
               </button>
             </p>
+            <!-- Helpful API detail for developers/testers -->
             <p class="text-sm text-gray-600 mt-1">
-              API detail: <code class="bg-gray-100 px-1.5 py-0.5 rounded">/api/links/{{ short_code }}</code>
+              API detail:
+              <code class="bg-gray-100 px-1.5 py-0.5 rounded">/api/links/{{ short_code }}</code>
             </p>
           </div>
         {% endif %}
       </section>
 
+      <!-- Quick actions card -->
       <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div class="flex items-center justify-between">
           <h2 class="text-lg font-semibold">Quick actions</h2>
-          <a href="/links"
-             class="rounded-lg px-3 py-1.5 border border-gray-300 hover:bg-gray-50">
+          <!-- Link to per-user analytics table -->
+          <a
+            href="/links"
+            class="rounded-lg px-3 py-1.5 border border-gray-300 hover:bg-gray-50"
+          >
             📊 See My Analytics
           </a>
         </div>
-        <p class="text-sm text-gray-600 mt-2">View all your links, clicks, and last access times.</p>
+        <p class="text-sm text-gray-600 mt-2">
+          View all your links, clicks, and last access times.
+        </p>
       </section>
+
     {% else %}
+      <!-- Logged-out state: small CTA to login/register -->
       <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
         <h1 class="text-2xl font-semibold mb-3">Welcome to MiniLink</h1>
         <p class="mb-4 text-gray-600">Login to create and manage your short links.</p>
-        <a href="/login" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+        <a
+          href="/login"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
           Login / Register
         </a>
       </section>

@@ -2,78 +2,132 @@
 {% block title %}Account{% endblock %}
 
 {% block content %}
+  <!--
+    Account page
+    - Two panels: Sign up (create account) and Sign in (existing user)
+    - Uses POST forms that hit /signup and /login routes in main.py
+    - Error messages are shown inline if provided by the server
+    - Tailwind classes match the rest of the app’s aesthetic
+  -->
+
   <div class="max-w-3xl mx-auto grid gap-6">
+    <!-- Header -->
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-semibold">Account</h1>
       <a href="/" class="rounded-lg px-3 py-1.5 border border-gray-300 hover:bg-gray-50">← Back to Home</a>
     </div>
 
-    <!-- Sign up -->
+    <!-- ============================= -->
+    <!-- Sign up panel (create account) -->
+    <!-- ============================= -->
     <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-lg font-semibold">Create an account</h2>
         <span class="text-xs text-gray-500">New here? Start below</span>
       </div>
 
-      <form method="post" action="/signup" class="grid md:grid-cols-2 gap-3">
+      <!--
+        Notes:
+        - autocomplete helps browsers fill in credentials correctly
+        - minlength provides basic UX feedback; server still validates
+      -->
+      <form method="post" action="/signup" class="grid md:grid-cols-2 gap-3" aria-label="Sign up form">
         <label class="block">
           <span class="text-sm text-gray-700">Username</span>
-          <input name="username" type="text" required
-                 class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input
+            name="username"
+            type="text"
+            required
+            autocomplete="username"
+            minlength="3"
+            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </label>
+
         <label class="block">
           <span class="text-sm text-gray-700">Password</span>
-          <input name="password" type="password" required
-                 class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input
+            name="password"
+            type="password"
+            required
+            autocomplete="new-password"
+            minlength="6"
+            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </label>
 
         <div class="md:col-span-2 flex items-center justify-between mt-1">
-          <button type="submit"
-                  class="rounded-lg px-4 py-2 bg-blue-600 text-white font-medium hover:bg-blue-700">
+          <button
+            type="submit"
+            class="rounded-lg px-4 py-2 bg-blue-600 text-white font-medium hover:bg-blue-700"
+          >
             Sign up
           </button>
-          <p class="text-xs text-gray-500">Passwords are securely hashed.</p>
+          <p class="text-xs text-gray-500">Passwords are securely hashed (PBKDF2-SHA256).</p>
         </div>
       </form>
 
+      <!-- Server-side validation errors for signup -->
       {% if signup_error %}
-        <p class="mt-3 text-red-600">{{ signup_error }}</p>
+        <p class="mt-3 text-red-600" role="alert">{{ signup_error }}</p>
       {% endif %}
     </section>
 
-    <!-- Login -->
+    <!-- ======================== -->
+    <!-- Login panel (existing)  -->
+    <!-- ======================== -->
     <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-lg font-semibold">Sign in</h2>
         <span class="text-xs text-gray-500">Already have an account?</span>
       </div>
 
-      <form method="post" action="/login" class="grid md:grid-cols-2 gap-3">
+      <!--
+        Notes:
+        - autocomplete uses "current-password" here
+        - tip shows default admin account for demo
+      -->
+      <form method="post" action="/login" class="grid md:grid-cols-2 gap-3" aria-label="Login form">
         <label class="block">
           <span class="text-sm text-gray-700">Username</span>
-          <input name="username" type="text" required
-                 class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input
+            name="username"
+            type="text"
+            required
+            autocomplete="username"
+            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </label>
+
         <label class="block">
           <span class="text-sm text-gray-700">Password</span>
-          <input name="password" type="password" required
-                 class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input
+            name="password"
+            type="password"
+            required
+            autocomplete="current-password"
+            class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </label>
 
         <div class="md:col-span-2 flex items-center justify-between mt-1">
-          <button type="submit"
-                  class="rounded-lg px-4 py-2 bg-blue-600 text-white font-medium hover:bg-blue-700">
+          <button
+            type="submit"
+            class="rounded-lg px-4 py-2 bg-blue-600 text-white font-medium hover:bg-blue-700"
+          >
             Log in
           </button>
           <p class="text-xs text-gray-500">
-            Tip: try <code class="bg-gray-100 px-1.5 py-0.5 rounded">admin</code> /
+            Tip: try
+            <code class="bg-gray-100 px-1.5 py-0.5 rounded">admin</code> /
             <code class="bg-gray-100 px-1.5 py-0.5 rounded">123</code>
           </p>
         </div>
       </form>
 
+      <!-- Server-side validation errors for login -->
       {% if login_error %}
-        <p class="mt-3 text-red-600">{{ login_error }}</p>
+        <p class="mt-3 text-red-600" role="alert">{{ login_error }}</p>
       {% endif %}
     </section>
   </div>

@@ -1,19 +1,32 @@
+# -----------------------------------------------------
+# Smoke & Functional Tests for minilink API
+# -----------------------------------------------------
+# These tests exercise the core API features:
+# - /health endpoint
+# - CRUD for links
+# - Redirect behavior & analytics tracking
+# - Stats endpoint
+# - Expiry handling
+
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
 from datetime import datetime, timedelta, timezone
 
+# provides a fresh TestClient for each test
 @pytest.fixture
 def client():
     # Ensures FastAPI startup/shutdown events run (DB tables get created)
     with TestClient(app) as c:
         yield c
 
+# basic health check
 def test_health(client):
     r = client.get("/health")
     assert r.status_code == 200
     assert r.json() == {"status": "ok"}
 
+# create link with all fields
 def test_create_link_minimal(client):
     r = client.post("/api/links", json={"original_url": "https://example.com"})
     assert r.status_code == 201
@@ -21,8 +34,8 @@ def test_create_link_minimal(client):
     assert "short_code" in body
     assert body["original_url"].rstrip("/") == "https://example.com"
 
+# create link with custom code and expiry
 def test_list_links(client):
-    # ensure at least one exists
     client.post("/api/links", json={"original_url": "https://example.com"})
     r = client.get("/api/links")
     assert r.status_code == 200
@@ -31,6 +44,7 @@ def test_list_links(client):
     assert len(data) >= 1
     assert "short_code" in data[0]
 
+# read link by its short code
 def test_read_link_by_code(client):
     r = client.post("/api/links", json={"original_url": "https://example.com"})
     code = r.json()["short_code"]
@@ -39,10 +53,12 @@ def test_read_link_by_code(client):
     assert r2.status_code == 200
     assert r2.json()["short_code"] == code
 
+# read link that doesn't exist
 def test_read_link_not_found(client):
     r = client.get("/api/links/__nope__")
     assert r.status_code == 404
 
+# update link's original URL
 def test_update_link_url(client):
     # create
     r = client.post("/api/links", json={"original_url": "https://example.com"})
@@ -52,20 +68,21 @@ def test_update_link_url(client):
     assert r2.status_code == 200
     assert r2.json()["original_url"].rstrip("/") == "https://example.org"
 
+# update link's custom code
 def test_update_link_custom_code_conflict(client):
-    # create two links
     r1 = client.post("/api/links", json={"original_url": "https://a.com"})
     code1 = r1.json()["short_code"]
     r2 = client.post("/api/links", json={"original_url": "https://b.com"})
     code2 = r2.json()["short_code"]
-    # try to rename code1 to existing code2
     r3 = client.patch(f"/api/links/{code1}", json={"custom_code": code2})
     assert r3.status_code == 409
 
+# update link that doesn't exist
 def test_update_link_not_found(client):
     r = client.patch("/api/links/__nope__", json={"original_url": "https://x.com"})
     assert r.status_code == 404
 
+# delete link and verify it's gone
 def test_delete_link(client):
     # create
     r = client.post("/api/links", json={"original_url": "https://to-delete.com"})
@@ -79,10 +96,12 @@ def test_delete_link(client):
     r3 = client.get(f"/api/links/{code}")
     assert r3.status_code == 404
 
+# delete link that doesn't exist
 def test_delete_link_not_found(client):
     r = client.delete("/api/links/__nope__")
     assert r.status_code == 404
 
+# test redirect and analytics tracking
 def test_redirect_and_analytics(client):
     # create a link
     r = client.post("/api/links", json={"original_url": "https://example.org"})
@@ -101,6 +120,7 @@ def test_redirect_and_analytics(client):
     assert body["click_count"] >= 1
     assert body["last_accessed"] is not None
 
+# test stats endpoint
 def test_stats_endpoint(client):
     r = client.post("/api/links", json={"original_url": "https://stats.com"})
     code = r.json()["short_code"]
@@ -115,6 +135,7 @@ def test_stats_endpoint(client):
     assert data["click_count"] >= 2
     assert data["last_accessed"] is not None
 
+# test redirect for expired link returns 410
 def test_redirect_expired_returns_410(client):
     expired_iso = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
     r = client.post("/api/links", json={"original_url": "https://expired.com", "expires_at": expired_iso})

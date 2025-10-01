@@ -1,14 +1,17 @@
-# app/db.py
 from sqlmodel import SQLModel, create_engine, Session
 
-DATABASE_URL = "sqlite:///./minilink.sqlite3"  # or your current path
+# sqlite database URL
+DATABASE_URL = "sqlite:///./minilink.sqlite3"  
+
+# create the database engine to manage connections to db
 engine = create_engine(DATABASE_URL, echo=False)
 
+# dependency to get a session, used in FastAPI endpoints, yields sqlmodel session
 def get_session():
     with Session(engine) as session:
         yield session
 
+# function to initialize the database (create tables)
 def init_db():
-    # IMPORTANT: import models so SQLModel.metadata knows about User & Link
-    from app import models  # <-- keep this import inside the function
+    from app import models
     SQLModel.metadata.create_all(engine)
