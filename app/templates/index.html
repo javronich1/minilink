@@ -4,51 +4,65 @@
 
 {% block content %}
   <div class="grid gap-6">
-    <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <h1 class="text-2xl font-semibold mb-4">Create a short link</h1>
-      <form method="post" action="/create" class="flex gap-2 flex-wrap">
-        <input name="original_url" type="url" placeholder="https://example.com"
-               class="flex-1 min-w-[260px] rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-               required />
-        <input name="label" type="text" placeholder="Optional label"
-               class="w-48 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        <button type="submit"
-                class="rounded-lg px-4 py-2 bg-blue-600 text-white font-medium hover:bg-blue-700">
-          Shorten
-        </button>
-      </form>
+    {% if user %}
+      <p class="text-gray-600">👋 Welcome, <strong>{{ user.username }}</strong>!
+        <a href="/logout" class="text-blue-600 underline ml-2">Logout</a>
+      </p>
 
-      {% if error %}
-        <p class="mt-3 text-red-600">{{ error }}</p>
-      {% endif %}
+      <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h1 class="text-2xl font-semibold mb-4">Create a short link</h1>
+        <form method="post" action="/create" class="flex gap-2 flex-wrap">
+          <input name="original_url" type="url" placeholder="https://example.com"
+                 class="flex-1 min-w-[260px] rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                 required />
+          <input name="label" type="text" placeholder="Optional label"
+                 class="w-48 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <button type="submit"
+                  class="rounded-lg px-4 py-2 bg-blue-600 text-white font-medium hover:bg-blue-700">
+            Shorten
+          </button>
+        </form>
 
-      {% if short_code %}
-        <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p class="font-medium">Short link created:</p>
-          <p class="mt-1 flex items-center gap-2">
-            <a class="text-blue-700 underline" href="/r/{{ short_code }}">/r/{{ short_code }}</a>
-            <button type="button"
-                    class="rounded-lg px-2 py-1 border border-blue-300 hover:bg-blue-100"
-                    onclick="navigator.clipboard.writeText(window.location.origin + '/r/{{ short_code }}').then(()=>alert('Copied!'))">
-              Copy
-            </button>
-          </p>
-          <p class="text-sm text-gray-600 mt-1">
-            API detail: <code class="bg-gray-100 px-1.5 py-0.5 rounded">/api/links/{{ short_code }}</code>
-          </p>
+        {% if error %}
+          <p class="mt-3 text-red-600">{{ error }}</p>
+        {% endif %}
+
+        {% if short_code %}
+          <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p class="font-medium">Short link created:</p>
+            <p class="mt-1 flex items-center gap-2">
+              <a class="text-blue-700 underline" href="/r/{{ short_code }}">/r/{{ short_code }}</a>
+              <button type="button"
+                      class="rounded-lg px-2 py-1 border border-blue-300 hover:bg-blue-100"
+                      onclick="navigator.clipboard.writeText(window.location.origin + '/r/{{ short_code }}').then(()=>alert('Copied!'))">
+                Copy
+              </button>
+            </p>
+            <p class="text-sm text-gray-600 mt-1">
+              API detail: <code class="bg-gray-100 px-1.5 py-0.5 rounded">/api/links/{{ short_code }}</code>
+            </p>
+          </div>
+        {% endif %}
+      </section>
+
+      <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold">Quick actions</h2>
+          <a href="/links"
+             class="rounded-lg px-3 py-1.5 border border-gray-300 hover:bg-gray-50">
+            📊 See My Analytics
+          </a>
         </div>
-      {% endif %}
-    </section>
-
-    <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <div class="flex items-center justify-between">
-        <h2 class="text-lg font-semibold">Quick actions</h2>
-        <a href="/links"
-           class="rounded-lg px-3 py-1.5 border border-gray-300 hover:bg-gray-50">
-          📊 See Analytics
+        <p class="text-sm text-gray-600 mt-2">View all your links, clicks, and last access times.</p>
+      </section>
+    {% else %}
+      <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
+        <h1 class="text-2xl font-semibold mb-3">Welcome to MiniLink</h1>
+        <p class="mb-4 text-gray-600">Login to create and manage your short links.</p>
+        <a href="/login" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          Login / Register
         </a>
-      </div>
-      <p class="text-sm text-gray-600 mt-2">View all links, clicks, and last access times.</p>
-    </section>
+      </section>
+    {% endif %}
   </div>
 {% endblock %}

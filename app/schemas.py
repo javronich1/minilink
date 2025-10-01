@@ -26,3 +26,15 @@ class LinkUpdate(BaseModel):
 class StatsRead(BaseModel):
     click_count: int
     last_accessed: Optional[datetime]
+
+class UserCreate(BaseModel):
+    username: str
+    password: str
+
+class UserRead(BaseModel):
+    id: int
+    username: str
+
+class LoginForm(BaseModel):
+    username: str
+    password: str

@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Sign in — minilink</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+      form { border: 1px solid #ddd; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
+      input { padding: .5rem; width: 100%; margin-top: .25rem; }
+      button { padding: .5rem .75rem; cursor: pointer; margin-top: .75rem; }
+      .row { display: grid; grid-template-columns: 1fr; gap: .5rem; }
+      .error { color: #b91c1c; margin-top: .5rem; }
+      .header { display:flex; justify-content: space-between; align-items:center; margin-bottom: 1rem; }
+      a { color: #1d4ed8; text-decoration: none; }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>minilink — account</h1>
+      <a href="/">← Home</a>
+    </div>
+
+    <h2>Create an account</h2>
+    <form method="post" action="/signup">
+      <div class="row">
+        <label>Username
+          <input type="text" name="username" required />
+        </label>
+        <label>Password
+          <input type="password" name="password" required />
+        </label>
+        <button type="submit">Sign up</button>
+      </div>
+      {% if signup_error %}<div class="error">{{ signup_error }}</div>{% endif %}
+    </form>
+
+    <h2>Sign in</h2>
+    <form method="post" action="/login">
+      <div class="row">
+        <label>Username
+          <input type="text" name="username" required />
+        </label>
+        <label>Password
+          <input type="password" name="password" required />
+        </label>
+        <button type="submit">Log in</button>
+      </div>
+      {% if login_error %}<div class="error">{{ login_error }}</div>{% endif %}
+    </form>
+  </body>
+</html>
