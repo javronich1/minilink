@@ -17,6 +17,8 @@ from app.schemas import LinkCreate, LinkRead, LinkUpdate, StatsRead
 from app.services import choose_code, sanitize_scheme
 from app.auth import hash_password, verify_password
 
+from fastapi.staticfiles import StaticFiles
+
 # -------------------------------
 # Lifespan (startup/shutdown)
 # -------------------------------
@@ -43,6 +45,8 @@ async def lifespan(app: FastAPI):
 # App + Middleware
 # -------------------------------
 app = FastAPI(title="minilink", lifespan=lifespan)
+
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 # Secure cookie-based session
 # Tip: read from ENV in production

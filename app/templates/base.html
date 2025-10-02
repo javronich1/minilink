@@ -4,12 +4,16 @@
     <meta charset="utf-8" />
     <title>minilink — {% block title %}{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
 
-  <body class="min-h-screen bg-gray-50 text-gray-900 flex flex-col">
+  <!-- Make the page a flex column so the footer sits at the bottom -->
+  <body class="min-h-screen flex flex-col bg-gray-50 text-gray-900 transition-opacity duration-300 opacity-0"
+        onload="document.body.style.opacity='1'">
+
     <!-- Navigation Bar -->
     <nav class="bg-white border-b border-gray-200 shadow-sm">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -21,15 +25,15 @@
 
           <!-- Navigation Links -->
           <div class="flex items-center gap-2">
-            <a href="/" 
+            <a href="/"
                class="px-3 py-1.5 rounded-md text-sm font-medium hover:bg-gray-100 {% block nav_home %}{% endblock %}">
               Home
             </a>
-            <a href="/links" 
+            <a href="/links"
                class="px-3 py-1.5 rounded-md text-sm font-medium hover:bg-gray-100 {% block nav_analytics %}{% endblock %}">
               Analytics
             </a>
-            <a href="/docs" 
+            <a href="/docs"
                class="px-3 py-1.5 rounded-md text-sm font-medium hover:bg-gray-100">
               API Docs
             </a>
@@ -40,13 +44,13 @@
                 <span class="text-gray-600 text-sm mr-2">
                   👋 {{ user.username }}
                 </span>
-                <button type="submit" 
+                <button type="submit"
                         class="px-3 py-1.5 rounded-md text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200">
                   Logout
                 </button>
               </form>
             {% else %}
-              <a href="/login" 
+              <a href="/login"
                  class="px-3 py-1.5 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700">
                 Login
               </a>
@@ -57,12 +61,12 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="flex-grow max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {% block content %}{% endblock %}
     </main>
 
-    <!-- Footer -->
-    <footer class="border-t border-gray-200 bg-white mt-auto">
+    <!-- Footer-->
+    <footer class="border-t border-gray-200 bg-white">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-xs text-gray-500 text-center">
         <p>Built using <strong>FastAPI</strong> + <strong>SQLite</strong> • © 2025 Gonzalo Fernandez de Cordoba</p>
       </div>
