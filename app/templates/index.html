@@ -17,11 +17,7 @@
       <p class="text-gray-600 flex items-center gap-2">
         👋 Welcome, <strong>{{ user.username }}</strong>!
         <!-- Use POST for logout to match server route; avoid GET for state-changing actions -->
-        <form method="post" action="/logout" class="inline">
-          <button type="submit" class="text-blue-600 underline hover:text-blue-700">
-            Logout
-          </button>
-        </form>
+        
       </p>
 
       <!-- Create short link card -->
