@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) Get the code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2) Set up Python (you can change to 3.11 if you want)
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+
+      # 3) Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          # In case pytest / pytest-cov are not in requirements.txt, ensure they are installed:
+          pip install pytest pytest-cov
+
+      # 4) Run tests with coverage (generate XML report for parsing)
+      - name: Run tests with coverage
+        run: |
+          pytest --cov=app --cov-report=xml --cov-report=term-missing
+
+      # 5) Enforce minimum coverage (70%)
+      - name: Enforce coverage threshold
+        run: |
+          python - << 'PY'
+          import xml.etree.ElementTree as ET
+
+          tree = ET.parse('coverage.xml')
+          root = tree.getroot()
+          # coverage.py XML has a "line-rate" attribute on the root element
+          line_rate = float(root.get("line-rate", 0.0))
+          pct = line_rate * 100
+          print(f"Total line coverage: {pct:.2f}%")
+          threshold = 70.0
+          if pct < threshold:
+              raise SystemExit(f"Coverage {pct:.2f}% is below required {threshold}%")
+          PY
