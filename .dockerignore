@@ -1,11 +1,22 @@
-.venv
+# Local environments
+venv/
+.venv/
+
+# Python cache
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
-*.pyd
+
+# Git
 .git
 .gitignore
-.idea
-.vscode
-*.sqlite3
+
+# Coverage / test artefacts
+htmlcov/
+.coverage
+.pytest_cache/
+
+# Editor / OS files
+.vscode/
+.idea/
 .DS_Store

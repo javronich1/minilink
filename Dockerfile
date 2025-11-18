@@ -1,29 +1,30 @@
-# Use a slim Python base
-FROM python:3.9-slim
+# Use a small Python base image
+FROM python:3.11-slim
 
-# Prevent Python from writing .pyc files and enable unbuffered logs
+# Do not write .pyc files and flush stdout/stderr immediately
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-# Workdir inside the image
+# Set working directory inside the container
 WORKDIR /app
 
-# System deps (optional: tzdata for localtime correctness)
+# Install system dependencies (for SQLite etc.)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    tzdata \
- && rm -rf /var/lib/apt/lists/*
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy only requirements first (better layer caching)
-COPY requirements.txt /app/requirements.txt
+# Install Python dependencies
+# 1) Copy only requirements first (better for Docker layer caching)
+COPY requirements.txt .
 
-# Install Python deps
-RUN pip install --no-cache-dir -r /app/requirements.txt
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the app
-COPY app /app/app
-COPY tests /app/tests
+# 2) Now copy the actual application code
+COPY app ./app
+COPY tests ./tests
 
-# Expose the app port
+# Expose the application port
 EXPOSE 8000
 
 # Default command: run uvicorn
