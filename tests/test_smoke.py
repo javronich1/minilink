@@ -13,11 +13,28 @@ from fastapi.testclient import TestClient
 from app.main import app
 from datetime import datetime, timedelta, timezone
 
-# provides a fresh TestClient for each test
 @pytest.fixture
 def client():
-    # Ensures FastAPI startup/shutdown events run (DB tables get created)
+    """
+    Returns an authenticated TestClient.
+
+    For each test:
+      - create a TestClient(app)
+      - ensure there's a user 'testuser'
+      - log in as that user so /api/* endpoints see a valid session.
+    """
     with TestClient(app) as c:
+        username = "testuser"
+        password = "testpass"
+
+        # Try to sign up (first test run will create the user)
+        c.post("/signup", data={"username": username, "password": password})
+
+        # Always log in (works whether the user was newly created or already existed)
+        login_resp = c.post("/login", data={"username": username, "password": password})
+        assert login_resp.status_code in (200, 303), login_resp.text
+
+        # Now c carries a session cookie, so /api/links* will work
         yield c
 
 # basic health check

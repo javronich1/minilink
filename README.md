@@ -33,6 +33,9 @@ uvicorn app.main:app --reload
 
 👉 Open http://localhost:8000 in your browser.
 
+# run tests + coverage
+python -m pytest --cov=app --cov-report=term-missing --cov-report=html
+
 ## 🧭 API Overview
 
 Endpoints:
