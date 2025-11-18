@@ -26,14 +26,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          # In case pytest / pytest-cov are not in requirements.txt, ensure they are installed:
           pip install pytest pytest-cov
 
       # 4) Run tests with coverage (generate XML report for parsing)
       - name: Run tests with coverage gate
-        env:
-          PYTHONPATH: .
         run: |
+          export PYTHONPATH="$PWD"
           python -m pytest --cov=app --cov-report=xml --cov-report=term-missing --cov-fail-under=70
 
       # 5) Enforce minimum coverage (70%)
@@ -44,7 +42,6 @@ jobs:
 
           tree = ET.parse('coverage.xml')
           root = tree.getroot()
-          # coverage.py XML has a "line-rate" attribute on the root element
           line_rate = float(root.get("line-rate", 0.0))
           pct = line_rate * 100
           print(f"Total line coverage: {pct:.2f}%")
