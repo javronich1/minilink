@@ -49,3 +49,23 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t minilink:${{ github.sha }} .
+
+      # 🚦 Run container and smoke-test /health
+      - name: Run Docker smoke test
+        run: |
+          # Start the container in the background
+          docker run -d --name minilink_test -p 8000:8000 minilink:${{ github.sha }}
+
+          # Give it a few seconds to boot
+          sleep 5
+
+          # Call the health endpoint; -f makes curl fail if status is not 2xx
+          curl -f http://127.0.0.1:8000/health
+
+          # Show logs for debugging if needed
+          echo "Container logs:"
+          docker logs minilink_test || true
+
+          # Stop and remove container
+          docker stop minilink_test
+          docker rm minilink_test
