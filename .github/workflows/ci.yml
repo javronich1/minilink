@@ -10,12 +10,20 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    # Make all `run:` steps execute in the repository root,
+    # and ensure Python can import the `app` package.
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+
     steps:
       # 1) Get the code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2) Set up Python (you can change to 3.11 if you want)
+      # 2) Set up Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -28,13 +36,23 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-cov
 
-      # 4) Run tests with coverage (generate XML report for parsing)
+      # 4) (Optional) Debug paths once, to see layout in logs
+      - name: Debug Python path
+        run: |
+          pwd
+          ls
+          python - << 'PY'
+          import os, sys
+          print("CWD:", os.getcwd())
+          print("sys.path:", sys.path)
+          PY
+
+      # 5) Run tests with coverage (and enforce 70% threshold)
       - name: Run tests with coverage gate
         run: |
-          export PYTHONPATH="$PWD"
           python -m pytest --cov=app --cov-report=xml --cov-report=term-missing --cov-fail-under=70
 
-      # 5) Enforce minimum coverage (70%)
+      # 6) Enforce minimum coverage (70%) explicitly from coverage.xml
       - name: Enforce coverage threshold
         run: |
           python - << 'PY'
