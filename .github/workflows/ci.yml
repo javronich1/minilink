@@ -30,9 +30,11 @@ jobs:
           pip install pytest pytest-cov
 
       # 4) Run tests with coverage (generate XML report for parsing)
-      - name: Run tests with coverage
+      - name: Run tests with coverage gate
+        env:
+          PYTHONPATH: .
         run: |
-          pytest --cov=app --cov-report=xml --cov-report=term-missing
+          python -m pytest --cov=app --cov-report=xml --cov-report=term-missing --cov-fail-under=70
 
       # 5) Enforce minimum coverage (70%)
       - name: Enforce coverage threshold
