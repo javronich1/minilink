@@ -3,9 +3,10 @@ from datetime import datetime
 import os
 from typing import Optional
 from contextlib import asynccontextmanager
+import time
 
 from fastapi import FastAPI, Depends, HTTPException, status, Request, Form
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 from starlette.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
@@ -18,6 +19,8 @@ from app.services import choose_code, sanitize_scheme
 from app.auth import hash_password, verify_password
 
 from fastapi.staticfiles import StaticFiles
+
+from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 
 # -------------------------------
 # Lifespan (startup/shutdown)
@@ -56,6 +59,54 @@ app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
 # Jinja templates
 templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
 
+@app.middleware("http")
+async def metrics_middleware(request: Request, call_next):
+    # Don't double-count the metrics endpoint itself
+    if request.url.path.startswith("/metrics"):
+        return await call_next(request)
+
+    start = time.perf_counter()
+    method = request.method
+    path = request.url.path
+
+    try:
+        response = await call_next(request)
+        status_code = response.status_code
+        # Count all requests by method / path / status
+        REQUEST_COUNT.labels(method, path, str(status_code)).inc()
+        return response
+    except Exception:
+        # Count server errors
+        REQUEST_ERRORS.labels(method, path).inc()
+        # Record as 500 in total requests
+        REQUEST_COUNT.labels(method, path, "500").inc()
+        raise
+    finally:
+        elapsed = time.perf_counter() - start
+        # Observe latency in seconds
+        REQUEST_LATENCY.labels(method, path).observe(elapsed)
+
+# -------------------------------
+# Metrics (Prometheus)
+# -------------------------------
+REQUEST_COUNT = Counter(
+    "minilink_requests_total",
+    "Total HTTP requests",
+    ["method", "path", "status"],
+)
+
+REQUEST_LATENCY = Histogram(
+    "minilink_request_latency_seconds",
+    "Request latency in seconds",
+    ["method", "path"],
+)
+
+REQUEST_ERRORS = Counter(
+    "minilink_request_errors_total",
+    "Total HTTP 5xx errors",
+    ["method", "path"],
+)
+
 # -------------------------------
 # Helpers
 # -------------------------------
@@ -72,6 +123,18 @@ def get_current_user(request: Request, session: Session) -> Optional[User]:
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+# -------------------------------
+# Metrics endpoint (Prometheus)
+# -------------------------------
+@app.get("/metrics")
+def metrics():
+    """
+    Exposes Prometheus metrics in text format.
+    Prometheus (or Docker/localhost) can scrape this at /metrics.
+    """
+    data = generate_latest()
+    return Response(content=data, media_type=CONTENT_TYPE_LATEST)
 
 # -------------------------------
 # API: CREATE LINK
