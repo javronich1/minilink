@@ -49,8 +49,9 @@ app = FastAPI(title="minilink", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 # Secure cookie-based session
-# Tip: read from ENV in production
-app.add_middleware(SessionMiddleware, secret_key="change-me-please-very-secret")
+# Read from env in production; fall back to a dev key locally
+SESSION_SECRET = os.getenv("SESSION_SECRET", "dev-insecure-session-key-change-me")
+app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
 
 # Jinja templates
 templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
