@@ -1,0 +1,70 @@
+# Output of GET /metrics
+
+# HELP python_gc_objects_collected_total Objects collected during gc
+# TYPE python_gc_objects_collected_total counter
+python_gc_objects_collected_total{generation="0"} 3539.0
+python_gc_objects_collected_total{generation="1"} 4035.0
+python_gc_objects_collected_total{generation="2"} 1532.0
+# HELP python_gc_objects_uncollectable_total Uncollectable objects found during GC
+# TYPE python_gc_objects_uncollectable_total counter
+python_gc_objects_uncollectable_total{generation="0"} 0.0
+python_gc_objects_uncollectable_total{generation="1"} 0.0
+python_gc_objects_uncollectable_total{generation="2"} 0.0
+# HELP python_gc_collections_total Number of times this generation was collected
+# TYPE python_gc_collections_total counter
+python_gc_collections_total{generation="0"} 252.0
+python_gc_collections_total{generation="1"} 22.0
+python_gc_collections_total{generation="2"} 2.0
+# HELP python_info Python platform information
+# TYPE python_info gauge
+python_info{implementation="CPython",major="3",minor="9",patchlevel="6",version="3.9.6"} 1.0
+# HELP minilink_requests_total Total HTTP requests
+# TYPE minilink_requests_total counter
+minilink_requests_total{method="GET",path="/health",status="200"} 1.0
+minilink_requests_total{method="GET",path="/favicon.ico",status="404"} 1.0
+# HELP minilink_requests_created Total HTTP requests
+# TYPE minilink_requests_created gauge
+minilink_requests_created{method="GET",path="/health",status="200"} 1.7635562229137862e+09
+minilink_requests_created{method="GET",path="/favicon.ico",status="404"} 1.763556222945796e+09
+# HELP minilink_request_latency_seconds Request latency in seconds
+# TYPE minilink_request_latency_seconds histogram
+minilink_request_latency_seconds_bucket{le="0.005",method="GET",path="/health"} 1.0
+minilink_request_latency_seconds_bucket{le="0.01",method="GET",path="/health"} 1.0
+minilink_request_latency_seconds_bucket{le="0.025",method="GET",path="/health"} 1.0
+minilink_request_latency_seconds_bucket{le="0.05",method="GET",path="/health"} 1.0
+minilink_request_latency_seconds_bucket{le="0.075",method="GET",path="/health"} 1.0
+minilink_request_latency_seconds_bucket{le="0.1",method="GET",path="/health"} 1.0
+minilink_request_latency_seconds_bucket{le="0.25",method="GET",path="/health"} 1.0
+minilink_request_latency_seconds_bucket{le="0.5",method="GET",path="/health"} 1.0
+minilink_request_latency_seconds_bucket{le="0.75",method="GET",path="/health"} 1.0
+minilink_request_latency_seconds_bucket{le="1.0",method="GET",path="/health"} 1.0
+minilink_request_latency_seconds_bucket{le="2.5",method="GET",path="/health"} 1.0
+minilink_request_latency_seconds_bucket{le="5.0",method="GET",path="/health"} 1.0
+minilink_request_latency_seconds_bucket{le="7.5",method="GET",path="/health"} 1.0
+minilink_request_latency_seconds_bucket{le="10.0",method="GET",path="/health"} 1.0
+minilink_request_latency_seconds_bucket{le="+Inf",method="GET",path="/health"} 1.0
+minilink_request_latency_seconds_count{method="GET",path="/health"} 1.0
+minilink_request_latency_seconds_sum{method="GET",path="/health"} 0.0013046669999994265
+minilink_request_latency_seconds_bucket{le="0.005",method="GET",path="/favicon.ico"} 1.0
+minilink_request_latency_seconds_bucket{le="0.01",method="GET",path="/favicon.ico"} 1.0
+minilink_request_latency_seconds_bucket{le="0.025",method="GET",path="/favicon.ico"} 1.0
+minilink_request_latency_seconds_bucket{le="0.05",method="GET",path="/favicon.ico"} 1.0
+minilink_request_latency_seconds_bucket{le="0.075",method="GET",path="/favicon.ico"} 1.0
+minilink_request_latency_seconds_bucket{le="0.1",method="GET",path="/favicon.ico"} 1.0
+minilink_request_latency_seconds_bucket{le="0.25",method="GET",path="/favicon.ico"} 1.0
+minilink_request_latency_seconds_bucket{le="0.5",method="GET",path="/favicon.ico"} 1.0
+minilink_request_latency_seconds_bucket{le="0.75",method="GET",path="/favicon.ico"} 1.0
+minilink_request_latency_seconds_bucket{le="1.0",method="GET",path="/favicon.ico"} 1.0
+minilink_request_latency_seconds_bucket{le="2.5",method="GET",path="/favicon.ico"} 1.0
+minilink_request_latency_seconds_bucket{le="5.0",method="GET",path="/favicon.ico"} 1.0
+minilink_request_latency_seconds_bucket{le="7.5",method="GET",path="/favicon.ico"} 1.0
+minilink_request_latency_seconds_bucket{le="10.0",method="GET",path="/favicon.ico"} 1.0
+minilink_request_latency_seconds_bucket{le="+Inf",method="GET",path="/favicon.ico"} 1.0
+minilink_request_latency_seconds_count{method="GET",path="/favicon.ico"} 1.0
+minilink_request_latency_seconds_sum{method="GET",path="/favicon.ico"} 0.00031695799999909013
+# HELP minilink_request_latency_seconds_created Request latency in seconds
+# TYPE minilink_request_latency_seconds_created gauge
+minilink_request_latency_seconds_created{method="GET",path="/health"} 1.763556222913822e+09
+minilink_request_latency_seconds_created{method="GET",path="/favicon.ico"} 1.763556222945808e+09
+# HELP minilink_request_errors_total Total HTTP 5xx errors
+# TYPE minilink_request_errors_total counter
