@@ -6,9 +6,10 @@ on:
   pull_request:
     branches: ["main"]
 
+# Needed so the workflow can read the repo and push images to GHCR
 permissions:
   contents: read
-  packages: write  # needed to push Docker image to GHCR
+  packages: write
 
 jobs:
   test:
@@ -17,6 +18,8 @@ jobs:
     env:
       # Make "app" importable (so `from app.main import app` works)
       PYTHONPATH: ${{ github.workspace }}
+      # Optional: secret used by SessionMiddleware inside tests
+      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
 
     steps:
       - name: Checkout repository
@@ -50,7 +53,7 @@ jobs:
           EOF
 
       # 🐳 Build Docker image if tests + coverage succeeded
-      - name: Build Docker image
+      - name: Build Docker image (local CI smoke image)
         run: |
           docker build -t minilink:${{ github.sha }} .
 
