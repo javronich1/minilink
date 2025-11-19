@@ -1,40 +1,131 @@
-# 🧩 **minilink — Minimal URL Shortener (FastAPI + SQLite)**
+# 🧩 **minilink — Minimal URL Shortener (FastAPI + SQLite + DevOps)**
 
-A clean, modern, and minimal URL shortener built with **FastAPI**, **SQLModel**, and **Tailwind CSS**.  
-Includes user authentication and individual analytics for each account.
+A clean, modern, and production-ready URL shortener built with **FastAPI**, **SQLModel**, **Tailwind CSS**, full **CI/CD**, **Docker**, and **Prometheus monitoring**.
+
+This version includes:
+- Automated tests (81% coverage)
+- CI pipeline (tests, coverage gate, Docker build, GHCR publish)
+- Cloud deployment (Render)
+- Health checks & Prometheus metrics
+- Clean, SOLID-friendly backend structure
 
 ---
 
 ## 🚀 Features
 
-- 🔗 **Shorten URLs** easily from a simple web interface  
-- 👤 **User authentication** (signup, login, logout)
-- 🧮 **Per-user analytics** — each user sees **only their own links**
-- 📊 Click analytics for every short link:
-  - Click count (`click_count`)
-  - Last access time (`last_accessed`)
-- 🧠 Smart sorting on the analytics page (most-clicked first)
-- ⚙️ Full REST API with CRUD operations (create links, read links, update click_counts, delete links)
-- ❤️ Minimal, elegant UI built with Tailwind CSS
-- 🩺 Health check endpoint for monitoring
+### 🔗 Core Application
+- Shorten URLs from a simple web interface  
+- Per-user link ownership and full authentication  
+- Click analytics (click_count, last_accessed)  
+- Smart sorting on analytics page (most-clicked first)  
+- Full REST API  
+- Minimal responsive UI using Tailwind  
+
+### 🛠️ DevOps Enhancements
+- Automated tests using pytest  
+- Coverage gate (pipeline fails below 70%)  
+- **GitHub Actions CI/CD**
+  - Run tests & coverage  
+  - Build Docker image  
+  - Push image to GHCR  
+  - Auto-deploy to Render on successful CI  
+- Production-ready Dockerfile  
+- Health check endpoint: `/health`  
+- Prometheus metrics at `/metrics`
+  - Request count  
+  - Latency histogram  
+  - Error counters  
+- Optional local Prometheus configuration  
 
 ---
 
 ## 💻 Quickstart (Local)
 
-1. Create and activate a virtual environment
-python3 -m venv .venv && source .venv/bin/activate
+### 1. Create & activate virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
 
-2. Install dependencies
+### 2. Install dependencies
 pip install -r requirements.txt
 
-3. Run the app
+### 3. Run the app
 uvicorn app.main:app --reload
 
 👉 Open http://localhost:8000 in your browser.
 
 # run tests + coverage
 python -m pytest --cov=app --cov-report=term-missing --cov-report=html
+
+View full HTML coverage at:
+htmlcov/index.html
+
+## 🐳 Docker (Local)
+
+Build the Docker image:
+docker build -t minilink:latest .
+
+Run the container:
+docker run -p 8000:8000 minilink:latest
+
+## 🚦 GitHub Actions CI/CD
+
+CI/CD is fully automated on main:
+
+✔ Runs on every push to main:
+	•	Installs dependencies
+	•	Runs tests + coverage
+	•	Enforces ≥70% coverage
+	•	Builds Docker image
+	•	Publishes image to GitHub Container Registry (GHCR)
+
+✔ CD (deployment)
+
+Render auto-deploys only when main CI passes.
+
+Docker image is published as:
+ghcr.io/javronich1/minilink:latest
+
+## ☁️ Cloud Deployment (Render)
+
+The live application runs at:
+
+👉 https://minilink-9gdf.onrender.com/
+
+Deployment type:
+	•	Service: Docker
+	•	Auto-deploy: ON (main branch only)
+	•	Environment variables (example):
+	•	COOKIE_SECRET
+	•	ENV=production
+
+## 📈 Monitoring & Health
+
+### Health Check
+
+GET /health
+→ {"status": "ok"}
+
+### Prometheus Metrics
+
+GET /metrics
+
+Exports:
+	•	minilink_requests_total
+	•	minilink_request_latency_seconds
+	•	Python GC metrics
+	•	Error counters
+
+Optional Prometheus Local Config
+
+monitoring/prometheus.yml:
+
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "minilink"
+    static_configs:
+      - targets: ["host.docker.internal:8000"]
 
 ## 🧭 API Overview
 
@@ -64,6 +155,8 @@ GET /api/links/{code}/stats
 GET /health
 → Health check endpoint
 
+GET /metrics — Prometheus metrics
+
 ## 🌐 Web Interface
 
 / — Home Page
@@ -89,11 +182,12 @@ Username: admin
 Password: 123
 
 ## 🧾 Example Workflow
-	1.	Go to http://localhost:8000/login
-	2.	Log in with admin / 123 or create your own account
-	3.	On the home page (/), enter a long URL and click Shorten
-	4.	Click See my analytics to view all your short links and their stats
-	5.	Test redirects and refresh analytics to see updated click counts
+	1.	Open /login
+	2.	Log in or create an account
+	3.	Shorten a URL on /
+	4.	View analytics at /links
+	5.	Try /r/<code> redirections
+	6.	Refresh analytics to update stats
 
 ## 🧩 Tech Stack
 	•	FastAPI — web framework
@@ -102,6 +196,9 @@ Password: 123
 	•	Tailwind CSS — modern responsive styling
 	•	Passlib (PBKDF2-SHA256) — secure password hashing
 	•	SessionMiddleware — cookie-based authentication
+	•	Docker
+	•	GitHub Actions
+	•	Prometheus
 
 ⚠️ Disclaimer — Use of AI Assistance
 
@@ -116,6 +213,8 @@ AI was primarily used for:
     •	Smoke testing
 
 All critical logic, reasoning, data modeling, and architectural decisions — including database design, authentication flow, and feature implementation — were conceptualized, coded, and refined by a human developer.
+
+All architectural decisions, core logic, refactoring, DevOps setup (CI/CD, Docker, monitoring), and deployment work were performed intentionally and manually by the developer.
 
 The AI served as a productivity enhancer, not a replacement for human creativity or understanding.
 
