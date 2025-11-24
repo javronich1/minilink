@@ -100,3 +100,29 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/minilink:latest
+
+  azure-setup:
+    needs: deploy
+    runs-on: ubuntu-latest
+    # Only run on push to main (not on PRs)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure login with service principal
+        uses: azure/login@v2
+        with:
+          # IMPORTANT: this comes from GitHub Secrets (never committed!)
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Show current Azure subscription
+        run: az account show
+
+      - name: Ensure resource group exists
+        run: |
+          az group create \
+            --name rg-minilink-${{ github.actor }} \
+            --location westeurope \
+            --tags project=minilink owner=${{ github.actor }} env=ci
