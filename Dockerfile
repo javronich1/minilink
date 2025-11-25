@@ -24,8 +24,8 @@ RUN pip install --upgrade pip && \
 COPY app ./app
 COPY tests ./tests
 
-# Expose the application port
-EXPOSE 8000
+# Expose the application port (Azure expects 80)
+EXPOSE 80
 
-# Default command: run uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Default command: run uvicorn on port 80
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]

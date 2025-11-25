@@ -61,7 +61,8 @@ jobs:
       - name: Run Docker smoke test
         run: |
           # Start the container in the background
-          docker run -d --name minilink_test -p 8000:8000 minilink:${{ github.sha }}
+          # Container listens on port 80, map it to 8000 on the runner
+          docker run -d --name minilink_test -p 8000:80 minilink:${{ github.sha }}
 
           # Give it a few seconds to boot
           sleep 5
@@ -101,28 +102,29 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/minilink:latest
 
-  azure-setup:
+  azure-deploy:
     needs: deploy
     runs-on: ubuntu-latest
     # Only run on push to main (not on PRs)
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Azure login with service principal
         uses: azure/login@v2
         with:
           # IMPORTANT: this comes from GitHub Secrets (never committed!)
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Show current Azure subscription
-        run: az account show
-
-      - name: Ensure resource group exists
+      - name: Configure Web App container image
         run: |
-          az group create \
-            --name rg-minilink-${{ github.actor }} \
-            --location westeurope \
-            --tags project=minilink owner=${{ github.actor }} env=ci
+          az webapp config container set \
+            --resource-group BCSAI2025-DEVOPS-STUDENTS-B \
+            --name minilink-javronich1-container \
+            --docker-custom-image-name ghcr.io/${{ github.repository_owner }}/minilink:latest \
+            --docker-registry-server-url https://ghcr.io
+
+      - name: Restart Web App
+        run: |
+          az webapp restart \
+            --resource-group BCSAI2025-DEVOPS-STUDENTS-B \
+            --name minilink-javronich1-container
