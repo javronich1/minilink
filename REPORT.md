@@ -2,14 +2,17 @@
 
 ## 1. Introduction
 This report summarizes the improvements made to the MiniLink URL shortener in Assignment 2.  
-The focus of this iteration was upgrading the project from a simple local application to a fully tested, containerized, monitored, and automatically deployed production-style service.
+
+Earlier versions were deployed on Render during development, but the final deployment uses Azure Web App for Containers as required by the assignment.
+
+The focus of this iteration was upgrading the project from a simple local application to a fully tested, containerized, monitored, and automatically deployed production-style service. 
 
 This includes:
 - Significant refactoring for code quality
 - Automated testing with ≥70% coverage (achieved 81%)
 - A complete CI/CD pipeline using GitHub Actions
 - Docker containerization and registry publishing
-- Cloud deployment using Render
+- Cloud deployment using Azure Web App for Containers
 - Health checks and Prometheus metrics
 - Updated documentation
 
@@ -52,39 +55,67 @@ Testing was performed using **pytest** and FastAPI’s **TestClient**, covering:
 - Pipeline enforces a **minimum of 70%**.
 - CI parses `coverage.xml` and fails the build if coverage is insufficient.
 
-Command used: python -m pytest –cov=app –cov-report=xml –cov-report=html
+Command used: python -m pytest --cov=app --cov-report=xml --cov-report=html
 
 ---
 
-## 4. CI/CD Pipeline (GitHub Actions + Docker + GHCR + Render)
+## 4. CI/CD Pipeline (GitHub Actions + Docker + GHCR + Azure)
 A full CI/CD workflow was built in `.github/workflows/ci.yml`.
 
-### CI Steps
-1. Checkout repo  
-2. Set up Python  
-3. Install dependencies  
-4. Run tests  
-5. Enforce ≥70% coverage  
-6. Build Docker image  
-7. Smoke test container (`/health`)  
+A full CI/CD workflow was built in .github/workflows/ci.yml.
 
-### Docker & GHCR
-- CI builds the image and pushes it to:  
-  **ghcr.io/javronich1/minilink:latest**
-- Uses `docker/build-push-action`.
-- Authentication handled via `GITHUB_TOKEN`.
+4.1 CI Steps
 
-### Deployment (CD)
-- Render is configured to:
-  - Pull from GitHub
-  - Use Dockerfile directly
-  - Auto-deploy **only when `main` changes**
-  - Use environment variables (`SESSION_SECRET`, `ENV=production`)
+The CI pipeline runs automatically on every push to main:
+	1.	Checkout repository
+	2.	Set up Python
+	3.	Install dependencies
+	4.	Run tests
+	5.	Enforce ≥70% coverage threshold
+	6.	Build Docker image
+	7.	Run a smoke test: launch the container and call /health
 
-This satisfies all CD requirements:
-- Containerized app  
-- Automated deployment pipeline  
-- Main-branch-only triggers  
+If any step fails, the pipeline stops.
+
+4.2 Docker & GHCR
+
+After tests pass, the pipeline builds and publishes the container image to:
+
+ghcr.io/javronich1/minilink:latest
+
+This is done using:
+	•	docker/login-action
+	•	docker/build-push-action
+
+Authentication is handled securely through GITHUB_TOKEN.
+
+4.3 Deployment to Azure
+
+The pipeline includes an azure-setup job that:
+	1.	Logs into Azure using the Service Principal credentials provided for the assignment
+	2.	Ensures the resource group exists (BCSAI2025-DEVOPS-STUDENTS-B)
+	3.	Updates the Azure Web App for Containers to pull the newest image from GHCR
+
+The Azure Web App is configured with:
+	•	Web App name: minilink-javronich1
+	•	Runtime: Docker container
+	•	Registry source: GHCR
+	•	Environment variables (SESSION_SECRET, COOKIE_SECRET, ENV=production)
+
+This satisfies the assignment’s requirements:
+	•	Containerized application
+	•	Automated deployment pipeline
+	•	Only deployed from main
+	•	Uses Azure resources via Service Principal
+
+4.4 Summary of Deployment Flow
+	1.	Push to main
+	2.	GitHub Actions:
+	•	run tests
+	•	check coverage
+	•	build + smoke test Docker
+	•	push image to GHCR
+	3.	Azure Web App pulls the updated image and restarts automatically
 
 ---
 
@@ -123,7 +154,7 @@ A minimal Prometheus config is included in `monitoring/prometheus.yml`.
 
 ### Trade-offs
 - Stayed on SQLite for simplicity (good for assignment; not ideal for scale).
-- Render was chosen for minimal config; production apps might require AWS/GCP/Azure.
+- Azure Web App for Containers was used for deployment. While simple to configure with Docker and suitable for this assignment, a more scalable production setup might require additional Azure services (App Service Plan upgrades, managed databases, IaC, etc.).
 - Focus was DevOps-oriented rather than adding many new features.
 
 ### Future Enhancements

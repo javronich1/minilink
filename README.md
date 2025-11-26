@@ -1,41 +1,38 @@
 # 🧩 **minilink — Minimal URL Shortener (FastAPI + SQLite + DevOps)**
 
-A clean, modern, and production-ready URL shortener built with **FastAPI**, **SQLModel**, **Tailwind CSS**, full **CI/CD**, **Docker**, and **Prometheus monitoring**.
+A clean, modern, and production-ready URL shortener built with **FastAPI**, **SQLModel**, **Tailwind CSS**, full **CI/CD**, **Docker**, **Azure Web App**, and **Prometheus monitoring**.
 
 This version includes:
-- Automated tests (81% coverage)
-- CI pipeline (tests, coverage gate, Docker build, GHCR publish)
-- Cloud deployment (Render)
-- Health checks & Prometheus metrics
-- Clean, SOLID-friendly backend structure
+	•	Automated tests (81% coverage)
+	•	CI pipeline (tests, coverage gate, Docker build, GHCR publish)
+	•	Azure Web App for Containers deployment
+	•	Health checks & Prometheus metrics
+	•	Clean, SOLID-friendly backend structure
 
 ---
 
 ## 🚀 Features
 
 ### 🔗 Core Application
-- Shorten URLs from a simple web interface  
-- Per-user link ownership and full authentication  
-- Click analytics (click_count, last_accessed)  
-- Smart sorting on analytics page (most-clicked first)  
-- Full REST API  
-- Minimal responsive UI using Tailwind  
+	•	Shorten URLs from a simple web interface
+	•	Per-user link ownership and full authentication
+	•	Click analytics (click_count, last_accessed)
+	•	Smart sorting on analytics page (most-clicked first)
+	•	Full REST API
+	•	Minimal responsive UI using Tailwind
 
 ### 🛠️ DevOps Enhancements
-- Automated tests using pytest  
-- Coverage gate (pipeline fails below 70%)  
-- **GitHub Actions CI/CD**
-  - Run tests & coverage  
-  - Build Docker image  
-  - Push image to GHCR  
-  - Auto-deploy to Render on successful CI  
-- Production-ready Dockerfile  
-- Health check endpoint: `/health`  
-- Prometheus metrics at `/metrics`
-  - Request count  
-  - Latency histogram  
-  - Error counters  
-- Optional local Prometheus configuration  
+	•	Automated tests using pytest
+	•	Coverage gate (pipeline fails below 70%)
+	•	GitHub Actions CI/CD
+	•	Run tests & coverage
+	•	Build Docker image
+	•	Push image to GHCR
+	•	Deploy to Azure Web App when CI passes
+	•	Production-ready Dockerfile
+	•	Health check endpoint: /health
+	•	Prometheus metrics at /metrics
+	•	Optional local Prometheus configuration
 
 ---
 
@@ -77,6 +74,7 @@ CI/CD is fully automated on main:
 	•	Enforces ≥70% coverage
 	•	Builds Docker image
 	•	Publishes image to GitHub Container Registry (GHCR)
+	•   Trigger Azure Web App deployment
 
 ✔ CD (deployment)
 
@@ -85,18 +83,25 @@ Render auto-deploys only when main CI passes.
 Docker image is published as:
 ghcr.io/javronich1/minilink:latest
 
-## ☁️ Cloud Deployment (Render)
+## ☁️ Cloud Deployment (Azure Web App for Containers)
 
 The live application runs at:
 
-👉 https://minilink-9gdf.onrender.com/
+👉 https://minilink-javronich1-container-h7chfcf6dvdrfgbg.westeurope-01.azurewebsites.net/
 
-Deployment type:
-	•	Service: Docker
-	•	Auto-deploy: ON (main branch only)
-	•	Environment variables (example):
+Deployment details:
+	•	Platform: Azure Web App for Containers
+	•	Source: Docker image from GHCR
+	•	Runtime: Python + FastAPI inside a custom Docker container
+	•	Auto-deploy: Enabled via GitHub Actions (only on main branch)
+	•	Azure Resource Group: BCSAI2025-DEVOPS-STUDENTS-B
+	•	Service Plan: Provided in course (Linux plan)
+	•	Environment variables:
 	•	COOKIE_SECRET
+	•	SESSION_SECRET
 	•	ENV=production
+
+This satisfies the DevOps requirement to deploy using Docker + Azure + CI/CD automation.
 
 ## 📈 Monitoring & Health
 
@@ -199,6 +204,7 @@ Password: 123
 	•	Docker
 	•	GitHub Actions
 	•	Prometheus
+	•	Azure Web App for Containers
 
 ⚠️ Disclaimer — Use of AI Assistance
 
